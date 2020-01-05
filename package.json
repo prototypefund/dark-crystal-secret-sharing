@@ -1,0 +1,20 @@
+{
+  "name": "sss-wrapper",
+  "version": "1.0.0",
+  "description": "Secret sharing",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/**/*.test.js | tap-spec"
+  },
+  "author": "Dark Crystal",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "shamirsecretsharing": "git+https://github.com/dsprenkels/sss-node.git",
+    "sodium-native": "^2.4.6"
+  },
+  "devDependencies": {
+    "tap-spec": "^5.0.0",
+    "tape": "^4.12.1",
+    "tape-plus": "^1.0.0"
+  }
+}
