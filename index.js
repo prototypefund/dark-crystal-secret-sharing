@@ -2,6 +2,7 @@ const sss = require('shamirsecretsharing')
 const sodium = require('sodium-native')
 const zero = sodium.sodium_memzero
 const assert = require('assert')
+const SHARELENGTH = 33
 
 module.exports = {
   encryptionKey () {
@@ -31,14 +32,26 @@ module.exports = {
     return message
   },
 
-  shareFixedLength (secret, amount, threshold) {
+  async shareFixedLength (secret, amount, threshold) {
+    assert(amount < 256, 'amount must be less than 256')
+    assert(amount > 1, 'amount must be greater than 1')
     assert(Buffer.isBuffer(secret), 'secret must be a buffer')
-    assert(secret.length === 64, 'secret must be 64 bytes')
-    return sss.createShares(secret, amount, threshold)
+    assert(secret.length === 32, 'secret must be 32 bytes')
+    const allShares = await sss.createKeyshares(secret, 255, threshold)
+    const indexes = []
+    const shares = []
+    do {
+      const randomIndex = sodium.randombytes_uniform(256)
+      if (!indexes.includes(randomIndex)) {
+        indexes.push(randomIndex)
+        shares.push(allShares[randomIndex])
+      }
+    } while (shares.length < amount)
+    return shares
   },
 
   combineFixedLength (sharesArray) {
-    return sss.combineShares(sharesArray)
+    return sss.combineKeyshares(sharesArray)
   },
 
   async share (secret, amount, threshold) {
@@ -47,9 +60,9 @@ module.exports = {
     // TODO handle length < 64
     const key = this.encryptionKey()
     const encryptedMessage = this.encrypt(secret, key)
-    const paddedKey = Buffer.concat([Buffer.alloc(32), key])
+    // const paddedKey = Buffer.concat([Buffer.alloc(32), key])
 
-    const shares = await this.shareFixedLength(paddedKey, amount, threshold)
+    const shares = await this.shareFixedLength(key, amount, threshold)
     const packedShares = shares.map((share) => {
       const s = Buffer.concat([share, encryptedMessage])
       return s
@@ -59,14 +72,13 @@ module.exports = {
   },
 
   async combine (packedShares) {
-    const SHARELENGTH = 113
     const messages = []
     const shares = packedShares.map((share) => {
       messages.push(share.slice(SHARELENGTH))
       return share.slice(0, SHARELENGTH)
     })
-    const paddedKey = await this.combineFixedLength(shares)
-    const key = paddedKey.slice(32)
+    const key = await this.combineFixedLength(shares)
+    // const key = paddedKey.slice(32)
     const message = this.decrypt(messages[0], key)
     return message
   }
