@@ -28,7 +28,7 @@ returns a promise which resolves to the recovered secret, if successful
 secrets.shareFixedLength, secrets.combineFixedLength
 ```
 
-Functions which behave similarly to `share`, `combine`, but take a 64 byte fixed length secret.
+Functions which behave similarly to `share`, `combine`, but take a 32 byte fixed length secret.
 
 ```js
 const key = secrets.encryptionKey()
