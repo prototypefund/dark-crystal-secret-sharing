@@ -47,6 +47,9 @@ module.exports = {
         shares.push(allShares[randomIndex])
       }
     } while (shares.length < amount)
+    allShares.forEach((share, index) => {
+      if (!indexes.includes(index)) zero(share)
+    })
     return shares
   },
 
@@ -55,14 +58,18 @@ module.exports = {
   },
 
   async share (secret, amount, threshold) {
+    assert(typeof threshold === 'number', 'threshold must be a number')
+    assert(typeof amount === 'number', 'amount must be a number')
+    assert(threshold < amount, 'threshold must be less than amount')
     if (!Buffer.isBuffer(secret)) secret = Buffer.from(secret)
-    if (secret.length === 64) return this.shareFixedLength(secret, amount, threshold)
-    // TODO handle length < 64
+    // if (secret.length === 32) return this.shareFixedLength(secret, amount, threshold)
     const key = this.encryptionKey()
     const encryptedMessage = this.encrypt(secret, key)
-    // const paddedKey = Buffer.concat([Buffer.alloc(32), key])
+    assert(encryptedMessage, 'Could not encrypt secret')
+    // TODO check length of encrypted message
 
     const shares = await this.shareFixedLength(key, amount, threshold)
+    //  
     const packedShares = shares.map((share) => {
       const s = Buffer.concat([share, encryptedMessage])
       return s
