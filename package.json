@@ -1,5 +1,5 @@
 {
-  "name": "sss-wrapper",
+  "name": "secret-sharing",
   "version": "1.0.0",
   "description": "Secret sharing",
   "main": "index.js",
