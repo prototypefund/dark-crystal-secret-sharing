@@ -69,7 +69,6 @@ module.exports = {
     // TODO check length of encrypted message
 
     const shares = await this.shareFixedLength(key, amount, threshold)
-    //  
     const packedShares = shares.map((share) => {
       const s = Buffer.concat([share, encryptedMessage])
       return s
