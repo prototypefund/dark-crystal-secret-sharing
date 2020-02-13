@@ -41,15 +41,19 @@ module.exports = {
     const indexes = []
     const shares = []
     do {
-      const randomIndex = sodium.randombytes_uniform(256)
+      const randomIndex = sodium.randombytes_uniform(255)
       if (!indexes.includes(randomIndex)) {
         indexes.push(randomIndex)
         shares.push(allShares[randomIndex])
       }
     } while (shares.length < amount)
+
+    // clear unused shares
     allShares.forEach((share, index) => {
       if (!indexes.includes(index)) zero(share)
     })
+
+    assert(!shares.filter(s => !s).length, `undefined generated ${JSON.stringify(indexes)}`)
     return shares
   },
 
